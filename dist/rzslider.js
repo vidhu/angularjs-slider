@@ -1,7 +1,7 @@
 /*! angularjs-slider - v2.9.0 - 
  (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervieu.me>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> - 
  https://github.com/angular-slider/angularjs-slider - 
- 2016-02-24 */
+ 2016-02-25 */
 /*jslint unparam: true */
 /*global angular: false, console: false, define, module */
 (function(root, factory) {
@@ -52,6 +52,7 @@
       getSelectionBarColor: null,
       getPointerColor: null,
       keyboardSupport: true,
+      logScale: false,
       scale: 1,
       enforceStep: true,
       enforceRange: false,
@@ -643,6 +644,8 @@
         this.precision = +this.options.precision;
 
         this.minValue = this.options.floor;
+        if (this.options.logScale && this.minValue === 0)
+          throw new Error("Can't use floor=0 with logarithmic scale");
 
         if (this.options.enforceStep) {
           this.scope.rzSliderModel = this.roundStep(this.scope.rzSliderModel);
@@ -1027,7 +1030,7 @@
        * correct parameters
        */
       getPointerColor: function(pointerType) {
-        if ( pointerType === 'max' ) {
+        if (pointerType === 'max') {
           return this.options.getPointerColor(this.scope.rzSliderHigh, pointerType);
         }
         return this.options.getPointerColor(this.scope.rzSliderModel, pointerType);
@@ -1166,7 +1169,15 @@
        * @returns {number}
        */
       valueToOffset: function(val) {
-        return (this.sanitizeValue(val) - this.minValue) * this.maxPos / this.valueRange || 0;
+        var sanitizedValue = this.sanitizeValue(val);
+        if (!this.options.logScale)
+          return (sanitizedValue - this.minValue) * this.maxPos / this.valueRange || 0;
+        else {
+          var minLog = Math.log(this.minValue),
+            maxLog = Math.log(this.maxValue),
+            scale = (maxLog - minLog) / (this.maxPos);
+          return (Math.log(sanitizedValue) - minLog) / scale || 0;
+        }
       },
 
       /**
@@ -1186,7 +1197,14 @@
        * @returns {number}
        */
       offsetToValue: function(offset) {
-        return (offset / this.maxPos) * this.valueRange + this.minValue;
+        if (!this.options.logScale)
+          return (offset / this.maxPos) * this.valueRange + this.minValue;
+        else {
+          var minLog = Math.log(this.minValue),
+            maxLog = Math.log(this.maxValue),
+            scale = (maxLog - minLog) / (this.maxPos);
+          return Math.exp(minLog + scale * offset);
+        }
       },
 
       // Events
