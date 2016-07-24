@@ -5,7 +5,7 @@
   "main": "dist/rzslider.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/angular-slider/angularjs-slider"
+    "url": "https://github.com/vidhu/angularjs-slider"
   },
   "keywords": [
     "angular",
