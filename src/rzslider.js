@@ -14,7 +14,7 @@
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
     define(['angular'], factory);
-  } else if (typeof module === 'object' && module.exports) {
+  } else if (typeof module === 'object' && module.exports && !root.angular) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
